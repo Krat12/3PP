@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+    <title>Admin</title>
+</head>
+<body>
+<!--Верхняя панель-->
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <span class="navbar-brand" th:text="${user.email} + ' with roles: ' + ${user.roles}"></span>
+        <ul class="nav navbar-nav navbar-right">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Выйти</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<!--Боковая панель-->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col bg-white">
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a href="/admin" class="nav-link active">Админ</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/user" class="nav-link">Пользователь</a>
+                </li>
+            </ul>
+        </div>
+        <!--Пустые вкалдки-->
+        <div class="col-10 bg-light">
+            <div><h2>Админка</h2></div>
+            <!--<div class="card">-->
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" id="admin-tab" data-toggle="tab" href="#admin" role="tab"
+                       aria-controls="admin" aria-selected="true">Таблица пользователей</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="new-tab" data-toggle="tab" href="#new" role="tab"
+                       aria-controls="new" aria-selected="false">Создать пользователя</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!--Вкладка All users-->
+                <div class="tab-pane fade show active" id="admin" role="tabpanel" aria-labelledby="admin-tab">
+                    <div><h5 class="card-header">Список пользователей</h5></div>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Имя</th>
+                            <th scope="col">Фамилия</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Право доступа</th>
+                            <th scope="col">Редактировать</th>
+                            <th scope="col">Удалить</th>
+                        </tr>
+                        </thead>
+                        <tbody id="allUsers">
+
+                        <!--Заполнение модального окна Редактирования-->
+
+                        <div class="modal" id="editUser" aria-hidden="true"
+                             role="dialog" aria-labelledby="editModalLabel">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Редактировать</h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div style="text-align: center;">
+                                            <div class="row justify-content-center align-items-center">
+                                                <form class="text-center" id="editUserForm">
+                                                    <div class="form-group font-weight-bold">
+                                                        <label for="editId">ID</label>
+                                                        <input type="number" class="form-control" id="editId"
+                                                               name="id" readonly>
+                                                        <label for="editName">Имя</label>
+                                                        <input type="text" class="form-control" id="editName"
+                                                               name="firstName">
+                                                        <label for="editLastName">Фамилия</label>
+                                                        <input type="text" class="form-control" id="editLastName"
+                                                               name="lastName">
+                                                        <label for="editEmail">Email</label>
+                                                        <input type="email" class="form-control" id="editEmail"
+                                                               name="email">
+                                                        <label for="editPassword">Пароль</label>
+                                                        <input type="password" class="form-control"
+                                                               id="editPassword"
+                                                               name="password">
+
+                                                        <label for="editRole">Право доступа</label>
+                                                        <select multiple class="form-select w-100" size="2"
+                                                                id="editRole"
+                                                                name="checkBoxRoles">
+                                                            <option value="ROLE_ADMIN">Админ</option>
+                                                            <option value="ROLE_USER">Пользователь</option>
+                                                        </select>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" id="closeEditModal"
+                                                data-dismiss="modal">Close
+                                        </button>
+                                        <button type="submit" id="editButton"
+                                                class="btn btn-primary">Обновить
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--Заполнение модального окна Удаления user-->
+                        <div class="modal fade" id="deleteUser" aria-hidden="true"
+                             role="dialog" aria-labelledby="deleteModalLabel">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Удалить</h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            &times;
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div style="text-align: center;">
+                                            <div class="row justify-content-center align-items-center">
+                                                <form class="text-center" method="post" id="deleteUserForm">
+                                                    <div class="form-group font-weight-bold">
+                                                        <label for="delId">ID</label>
+                                                        <input type="number" class="form-control" id="delId"
+                                                               name="id" readonly>
+                                                        <label for="delName">Имя</label>
+                                                        <input type="text" class="form-control" id="delName"
+                                                               name="firstName" readonly>
+                                                        <label for="delLastName">Фамилия</label>
+                                                        <input type="text" class="form-control" id="delLastName"
+                                                               name="lastName" readonly>
+                                                        <label for="delEmail">Email</label>
+                                                        <input type="email" class="form-control" id="delEmail"
+                                                               name="email" readonly>
+                                                        <label for="delPassword">Пароль</label>
+                                                        <input type="password" class="form-control"
+                                                               id="delPassword"
+                                                               name="password" readonly>
+
+                                                        <label for="delRole">Право доступа</label>
+                                                        <select class="form-select w-100" size="2" id="delRole"
+                                                                name="checkBoxRoles">
+                                                            <option value="ROLE_ADMIN">Админ</option>
+                                                            <option value="ROLE_USER">Пользователь</option>
+                                                        </select>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" id="closeDeleteModal"
+                                                class="btn btn-secondary"
+                                                data-dismiss="modal">Close
+                                        </button>
+                                        <button type="submit" id="deleteButton"
+                                                class="btn btn-danger">Удалить
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </tr-->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!--Вкладка добавить юзера-->
+                <div class="tab-pane fade" id="new" role="tabpanel" aria-labelledby="new-tab">
+                    <h5 class="card-header">Создать пользователя</h5>
+                    <div class="row justify-content-center align-items-center">
+                        <form class="text-center" th:action="@{/admin/create}" th:object="${user}" method="post">
+                            <div class="form-group font-weight-bold">
+                                <label for="name">Имя</label>
+                                <input type="text" class="form-control" id="name" name="firstName"
+                                       placeholder="Имя">
+                                <label for="lastName">Фамилия</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName"
+                                       placeholder="Фамилия">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                                <label for="password">Пароль</label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                       placeholder="Пароль">
+
+                                <label for="createRole">Право доступа</label>
+                                <select multiple id="createRole" class="form-select w-100" size="2"
+                                        name="checkBoxRoles">
+                                    <option value="ROLE_ADMIN">Админ</option>
+                                    <option value="ROLE_USER">Пользователь</option>
+                                </select>
+
+                                <button id="createUser" type="submit" class="btn btn-success">Создать</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+<script src="\static\js\users.js"></script>
+</body>
+</html>
